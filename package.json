@@ -1,0 +1,18 @@
+{
+  "name": "kenic-hackathon",
+  "version": "1.0.0",
+  "description": "",
+  "main": "epp.js",
+  "type": "module",
+  "scripts": {
+    "start": "node epp.js",
+    "dev": "nodemon epp.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "xml2js": "^0.6.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
