@@ -1,3 +1,5 @@
+import json
+import xml.etree.ElementTree as ET
 #!/usr/bin/env python3
 import ssl
 import socket
@@ -139,8 +141,8 @@ class EPPClient:
                 break
             body += chunk
         xml_response = body.decode("utf-8", errors="ignore")
-        print(f"\n=== {label} ===")
-        print(textwrap.indent(xml_response, "  "))
+        print(f"\n=== {label} ===", file=sys.stderr)
+        print(textwrap.indent(xml_response, "  "), file=sys.stderr)
         return xml_response
 
     def send(self, xml, label="RESPONSE"):
@@ -157,53 +159,93 @@ class EPPClient:
             self.sock = None
 
 # ==== CLI ====
+
+# --- JSON Output Helpers ---
+def parse_response(xml):
+  """Parse EPP XML into JSON-friendly dict."""
+  try:
+    root = ET.fromstring(xml)
+    ns = {"epp": "urn:ietf:params:xml:ns:epp-1.0", "domain": "urn:ietf:params:xml:ns:domain-1.0"}
+
+    result = root.find(".//epp:result", ns)
+    code = result.attrib.get("code") if result is not None else None
+    msg = result.findtext("epp:msg", namespaces=ns) if result is not None else None
+
+    # Domain check response
+    chk_data = root.find(".//domain:chkData", ns)
+    cre_data = root.find(".//domain:creData", ns)
+
+    data = None
+    if chk_data is not None:
+      name_el = chk_data.find(".//domain:name", ns)
+      reason = chk_data.find(".//domain:reason", ns)
+      data = {
+        "name": name_el.text,
+        "available": name_el.attrib.get("avail"),
+        "reason": reason.text if reason is not None else None
+      }
+
+    elif cre_data is not None:
+      data = {
+        "name": cre_data.findtext("domain:name", namespaces=ns),
+        "created": cre_data.findtext("domain:crDate", namespaces=ns),
+        "expires": cre_data.findtext("domain:exDate", namespaces=ns)
+      }
+
+    return {"code": code, "msg": msg, "data": data}
+  except Exception as e:
+    return {"code": None, "msg": f"Parse error: {e}", "data": None}
+
 def main():
-    if len(sys.argv) < 2:
-        print("Usage: python epp_client.py [login|check DOMAIN...|create_contact ID|create_domain DOMAIN CONTACT_ID|logout]")
-        sys.exit(1)
+  if len(sys.argv) < 2:
+    print(json.dumps({"error": "Usage: python epp_client.py [login|check DOMAIN...|create_contact ID|create_domain DOMAIN CONTACT_ID|logout]"}))
+    sys.exit(1)
 
-    command = sys.argv[1]
-    client = EPPClient(HOST, PORT)
-    client.connect()
+  command = sys.argv[1]
+  client = EPPClient(HOST, PORT)
+  client.connect()
 
-    if command == "login":
-        client.send(epp_login(), "LOGIN")
+  if command == "login":
+    client.send(epp_login(), "LOGIN")
 
-    elif command == "check":
-        domains = sys.argv[2:]
-        if not domains:
-            print("Usage: python epp_client.py check <domain1> [domain2 ...]")
-            sys.exit(1)
-        client.send(epp_login(), "LOGIN")
-        client.send(epp_check(domains), "CHECK")
-        client.send(epp_logout(), "LOGOUT")
+  elif command == "check":
+    domains = sys.argv[2:]
+    if not domains:
+      print(json.dumps({"error": "Usage: python epp_client.py check <domain1> [domain2 ...]"}))
+      sys.exit(1)
+    client.send(epp_login(), "LOGIN")
+    xml = client.send(epp_check(domains), "CHECK")
+    print(json.dumps(parse_response(xml)))
+    client.send(epp_logout(), "LOGOUT")
 
-    elif command == "create_contact":
-        if len(sys.argv) < 3:
-            print("Usage: python epp_client.py create_contact <contact_id>")
-            sys.exit(1)
-        contact_id = sys.argv[2]
-        client.send(epp_login(), "LOGIN")
-        client.send(epp_create_contact(contact_id), f"CREATE-CONTACT {contact_id}")
-        client.send(epp_logout(), "LOGOUT")
+  elif command == "create_contact":
+    if len(sys.argv) < 3:
+      print(json.dumps({"error": "Usage: python epp_client.py create_contact <contact_id>"}))
+      sys.exit(1)
+    contact_id = sys.argv[2]
+    client.send(epp_login(), "LOGIN")
+    xml = client.send(epp_create_contact(contact_id), f"CREATE-CONTACT {contact_id}")
+    print(json.dumps(parse_response(xml)))
+    client.send(epp_logout(), "LOGOUT")
 
-    elif command == "create_domain":
-        if len(sys.argv) < 4:
-            print("Usage: python epp_client.py create_domain <domain> <contact_id>")
-            sys.exit(1)
-        domain = sys.argv[2]
-        contact_id = sys.argv[3]
-        client.send(epp_login(), "LOGIN")
-        client.send(epp_create_domain(domain, contact_id), f"CREATE-DOMAIN {domain}")
-        client.send(epp_logout(), "LOGOUT")
+  elif command == "create_domain":
+    if len(sys.argv) < 4:
+      print(json.dumps({"error": "Usage: python epp_client.py create_domain <domain> <contact_id>"}))
+      sys.exit(1)
+    domain = sys.argv[2]
+    contact_id = sys.argv[3]
+    client.send(epp_login(), "LOGIN")
+    xml = client.send(epp_create_domain(domain, contact_id), f"CREATE-DOMAIN {domain}")
+    print(json.dumps(parse_response(xml)))
+    client.send(epp_logout(), "LOGOUT")
 
-    elif command == "logout":
-        client.send(epp_logout(), "LOGOUT")
+  elif command == "logout":
+    client.send(epp_logout(), "LOGOUT")
 
-    else:
-        print("Unknown command:", command)
+  else:
+    print(json.dumps({"error": f"Unknown command: {command}"}))
 
-    client.close()
+  client.close()
 
 if __name__ == "__main__":
     main()
