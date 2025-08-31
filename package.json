@@ -9,6 +9,7 @@
     "dev": "nodemon epp.js"
   },
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.21.2",
     "xml2js": "^0.6.2"
   },

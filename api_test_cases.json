@@ -1,0 +1,122 @@
+{
+  "info": {
+    "name": "Simple EPP API",
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-1234567890ef",
+    "description": "Postman collection for simplified EPP API (check/create/delete domains) with example responses",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Check Domain",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/check/makoriseth.ac.ke",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["check", "makoriseth.ac.ke"]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {},
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": "{\n  \"code\": \"1000\",\n  \"msg\": \"Command completed successfully\",\n  \"data\": {\n    \"name\": \"makoriseth.ac.ke\",\n    \"available\": \"1\",\n    \"reason\": null\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Create Domain",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"domain\": \"makoriseth.ac.ke\",\n  \"contact\": \"C001\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/create",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["create"]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {},
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": "{\n  \"code\": \"1000\",\n  \"msg\": \"Command completed successfully\",\n  \"data\": {\n    \"name\": \"makoriseth.ac.ke\",\n    \"created\": \"2025-08-31T12:00:00Z\",\n    \"expires\": \"2026-08-31T12:00:00Z\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Delete Domain",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:3000/delete/makoriseth.ac.ke",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["delete", "makoriseth.ac.ke"]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {},
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": "{\n  \"code\": \"1000\",\n  \"msg\": \"Command completed successfully\",\n  \"data\": {\n    \"name\": \"makoriseth.ac.ke\"\n  }\n}"
+        }
+      ]
+    },
+    {
+      "name": "Bulk Create Domains",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"keyword\": \"brand\",\n  \"contact\": \"C123\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:3000/bulk-create",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "3000",
+          "path": ["bulk-create"]
+        }
+      },
+      "response": [
+        {
+          "name": "Success",
+          "originalRequest": {},
+          "status": "OK",
+          "code": 200,
+          "_postman_previewlanguage": "json",
+          "header": [],
+          "body": "{\n  \"keyword\": \"brand\",\n  \"results\": [\n    {\n      \"domain\": \"mybrand.ac.ke\",\n      \"status\": \"created\",\n      \"info\": { /* ... */ }\n    },\n    {\n      \"domain\": \"thebrand.ac.ke\",\n      \"status\": \"exists\",\n      \"info\": { /* ... */ }\n    }\n  ]\n}"
+        }
+      ]
+    }
+  ]
+}
