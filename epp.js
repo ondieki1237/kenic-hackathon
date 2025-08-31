@@ -30,7 +30,8 @@ app.use(cors({
     "http://localhost:3000",
     "http://localhost:3001",
     "https://kenicweb.vercel.app",
-    "https://womd.co.ke"
+    "https://womd.co.ke",
+    "https://www.womd.co.ke" // <-- add this line
   ],
   methods: ["GET", "POST", "DELETE"],
   credentials: true,
