@@ -1,0 +1,121 @@
+{
+  "info": {
+    "name": "EPP API (Deployed)",
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-1234567890ef",
+    "description": "Postman collection for EPP API deployed on Render.com",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Check Domain",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://kenic-hackathon.onrender.com/check/makoriseth.ac.ke",
+          "protocol": "https",
+          "host": ["kenic-hackathon.onrender.com"],
+          "path": ["check", "makoriseth.ac.ke"]
+        }
+      }
+    },
+    {
+      "name": "Create Domain",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"domain\": \"makoriseth.ac.ke\",\n  \"contact\": \"C001\"\n}"
+        },
+        "url": {
+          "raw": "https://kenic-hackathon.onrender.com/create",
+          "protocol": "https",
+          "host": ["kenic-hackathon.onrender.com"],
+          "path": ["create"]
+        }
+      }
+    },
+    {
+      "name": "Delete Domain",
+      "request": {
+        "method": "DELETE",
+        "header": [],
+        "url": {
+          "raw": "https://kenic-hackathon.onrender.com/delete/makoriseth.ac.ke",
+          "protocol": "https",
+          "host": ["kenic-hackathon.onrender.com"],
+          "path": ["delete", "makoriseth.ac.ke"]
+        }
+      }
+    },
+    {
+      "name": "Bulk Create Domains",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"keyword\": \"brand\",\n  \"contact\": \"C123\",\n  \"extensions\": [\".co.ke\", \".or.ke\", \".ac.ke\"],\n  \"user\": \"user@example.com\"\n}"
+        },
+        "url": {
+          "raw": "https://kenic-hackathon.onrender.com/bulk-create",
+          "protocol": "https",
+          "host": ["kenic-hackathon.onrender.com"],
+          "path": ["bulk-create"]
+        }
+      }
+    },
+    {
+      "name": "Save Domain",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"domain\": \"mybrand.co.ke\",\n  \"prefix\": \"my\",\n  \"extension\": \".co.ke\",\n  \"contact\": \"C123\",\n  \"user\": \"user@example.com\"\n}"
+        },
+        "url": {
+          "raw": "https://kenic-hackathon.onrender.com/save-domain",
+          "protocol": "https",
+          "host": ["kenic-hackathon.onrender.com"],
+          "path": ["save-domain"]
+        }
+      }
+    },
+    {
+      "name": "Get User Domains",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://kenic-hackathon.onrender.com/user-domains/user@example.com",
+          "protocol": "https",
+          "host": ["kenic-hackathon.onrender.com"],
+          "path": ["user-domains", "user@example.com"]
+        }
+      }
+    },
+    {
+      "name": "Get My Domains (Auth Header)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-user-email", "value": "user@example.com" }
+        ],
+        "url": {
+          "raw": "https://kenic-hackathon.onrender.com/my-domains",
+          "protocol": "https",
+          "host": ["kenic-hackathon.onrender.com"],
+          "path": ["my-domains"]
+        }
+      }
+    }
+  ]
+}

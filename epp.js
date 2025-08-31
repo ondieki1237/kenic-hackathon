@@ -9,13 +9,13 @@ const app = express();
 app.use(express.json());
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB connection error:", err));
 
 // Domain schema
 const domainSchema = new mongoose.Schema({
-  domain: String,
+  domain: { type: String, unique: true }, // <-- updated to be unique
   prefix: String,
   extension: String,
   contact: String,
@@ -52,23 +52,34 @@ function runPython(args) {
   });
 }
 
-app.get("/check/:domain", async (req,res)=> {
+// New endpoint to check MongoDB connection status
+app.get("/mongodb-status", async (req, res) => {
+  try {
+    // Check MongoDB connection status (1 = connected)
+    const isConnected = mongoose.connection.readyState === 1;
+    res.json({ connected: isConnected });
+  } catch (err) {
+    console.error(`[${new Date().toISOString()}] MongoDB status check error:`, err.message);
+    res.status(500).json({ connected: false, error: err.message });
+  }
+});
+
+app.get("/check/:domain", async (req, res) => {
   try { res.json(await runPython(["check", req.params.domain])); }
-  catch(e){ res.status(500).json({error:e}); }
+  catch (e) { res.status(500).json({ error: e }); }
 });
 
-app.post("/create", async (req,res)=>{
-  const {domain, contact} = req.body;
-  if(!domain||!contact) return res.status(400).json({error:"domain & contact required"});
-  try{ res.json(await runPython(["create", domain, contact])); }
-  catch(e){ res.status(500).json({error:e}); }
+app.post("/create", async (req, res) => {
+  const { domain, contact } = req.body;
+  if (!domain || !contact) return res.status(400).json({ error: "domain & contact required" });
+  try { res.json(await runPython(["create", domain, contact])); }
+  catch (e) { res.status(500).json({ error: e }); }
 });
 
-app.delete("/delete/:domain", async (req,res)=>{
-  try{ res.json(await runPython(["delete", req.params.domain])); }
-  catch(e){ res.status(500).json({error:e}); }
+app.delete("/delete/:domain", async (req, res) => {
+  try { res.json(await runPython(["delete", req.params.domain])); }
+  catch (e) { res.status(500).json({ error: e }); }
 });
-
 
 // Manual API to save a domain to the database
 app.post("/save-domain", async (req, res) => {
@@ -159,6 +170,7 @@ app.post("/bulk-create", async (req, res) => {
 
   res.json({ keyword, type: type || "all", results });
 });
+
 app.get("/user-domains/:user", async (req, res) => {
   try {
     const domains = await Domain.find({ user: req.params.user });
@@ -167,6 +179,7 @@ app.get("/user-domains/:user", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch domains", details: err.message });
   }
 });
+
 app.get("/my-domains", async (req, res) => {
   // Example: get user email from header (replace with real auth in production)
   const userEmail = req.headers["x-user-email"];
@@ -178,6 +191,7 @@ app.get("/my-domains", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch domains", details: err.message });
   }
 });
+
 const paymentSchema = new mongoose.Schema({
   domain: String,
   amount: Number,
@@ -201,4 +215,4 @@ app.post("/pay", async (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, ()=>console.log(`EPP API running on port ${PORT}`));
+app.listen(PORT, () => console.log(`EPP API running on port ${PORT}`));
