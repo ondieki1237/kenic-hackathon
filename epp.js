@@ -24,14 +24,16 @@ const domainSchema = new mongoose.Schema({
 });
 const Domain = mongoose.model("Domain", domainSchema);
 
-// Enable CORS for frontend localhost:3000, localhost:3001, and deployed frontend
+// Enable CORS for all origins and specific localhost ports
 app.use(cors({
   origin: [
     "http://localhost:3000",
     "http://localhost:3001",
+    "http://localhost:8081",
     "https://kenicweb.vercel.app",
     "https://womd.co.ke",
-    "https://www.womd.co.ke" // <-- add this line
+    "https://www.womd.co.ke",
+    "*"
   ],
   methods: ["GET", "POST", "DELETE"],
   credentials: true,
