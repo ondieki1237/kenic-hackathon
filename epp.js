@@ -143,23 +143,7 @@ app.post("/bulk-create", async (req, res) => {
       const check = await runPython(["check", domain]);
       console.log(`[BULK-CREATE] Checked domain: ${domain}, extension: ${ext}, result:`, check);
       if (check.data && check.data.available === "1") {
-        const created = await runPython([
-          "domain_create",
-          domain,
-          "1",
-          contact,
-          contact,
-          contact,
-          "secret",
-          "-",
-        ]);
-        // Save to DB
-        try {
-          await Domain.create({ domain, prefix, extension: ext, contact, user: req.body.user });
-        } catch (dbErr) {
-          console.error("Error saving domain to DB:", dbErr);
-        }
-        results.push({ domain, prefix, extension: ext, status: "created", info: created });
+        results.push({ domain, prefix, extension: ext, status: "available", info: check });
       }
       // else: do not include domains that already exist or errored
     } catch (err) {
