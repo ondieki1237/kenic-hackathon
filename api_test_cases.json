@@ -1,8 +1,8 @@
 {
   "info": {
-    "name": "Simple EPP API",
+    "name": "EPP API (Updated)",
     "_postman_id": "a1b2c3d4-e5f6-7890-abcd-1234567890ef",
-    "description": "Postman collection for simplified EPP API (check/create/delete domains) with example responses",
+    "description": "Postman collection for EPP API with user, bulk, and save endpoints",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -12,10 +12,10 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "http://localhost:3000/check/makoriseth.ac.ke",
+          "raw": "http://localhost:5000/check/makoriseth.ac.ke",
           "protocol": "http",
           "host": ["localhost"],
-          "port": "3000",
+          "port": "5000",
           "path": ["check", "makoriseth.ac.ke"]
         }
       },
@@ -43,10 +43,10 @@
           "raw": "{\n  \"domain\": \"makoriseth.ac.ke\",\n  \"contact\": \"C001\"\n}"
         },
         "url": {
-          "raw": "http://localhost:3000/create",
+          "raw": "http://localhost:5000/create",
           "protocol": "http",
           "host": ["localhost"],
-          "port": "3000",
+          "port": "5000",
           "path": ["create"]
         }
       },
@@ -68,10 +68,10 @@
         "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "http://localhost:3000/delete/makoriseth.ac.ke",
+          "raw": "http://localhost:5000/delete/makoriseth.ac.ke",
           "protocol": "http",
           "host": ["localhost"],
-          "port": "3000",
+          "port": "5000",
           "path": ["delete", "makoriseth.ac.ke"]
         }
       },
@@ -96,13 +96,13 @@
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"keyword\": \"brand\",\n  \"contact\": \"C123\"\n}"
+          "raw": "{\n  \"keyword\": \"brand\",\n  \"contact\": \"C123\",\n  \"extensions\": [\".co.ke\", \".or.ke\", \".ac.ke\"],\n  \"user\": \"user@example.com\"\n}"
         },
         "url": {
-          "raw": "http://localhost:3000/bulk-create",
+          "raw": "http://localhost:5000/bulk-create",
           "protocol": "http",
           "host": ["localhost"],
-          "port": "3000",
+          "port": "5000",
           "path": ["bulk-create"]
         }
       },
@@ -117,6 +117,56 @@
           "body": "{\n  \"keyword\": \"brand\",\n  \"results\": [\n    {\n      \"domain\": \"mybrand.ac.ke\",\n      \"status\": \"created\",\n      \"info\": { /* ... */ }\n    },\n    {\n      \"domain\": \"thebrand.ac.ke\",\n      \"status\": \"exists\",\n      \"info\": { /* ... */ }\n    }\n  ]\n}"
         }
       ]
+    },
+    {
+      "name": "Save Domain",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"domain\": \"mybrand.co.ke\",\n  \"prefix\": \"my\",\n  \"extension\": \".co.ke\",\n  \"contact\": \"C123\",\n  \"user\": \"user@example.com\"\n}"
+        },
+        "url": {
+          "raw": "http://localhost:5000/save-domain",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["save-domain"]
+        }
+      }
+    },
+    {
+      "name": "Get User Domains",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "http://localhost:5000/user-domains/user@example.com",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["user-domains", "user@example.com"]
+        }
+      }
+    },
+    {
+      "name": "Get My Domains (Auth Header)",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-user-email", "value": "user@example.com" }
+        ],
+        "url": {
+          "raw": "http://localhost:5000/my-domains",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["my-domains"]
+        }
+      }
     }
   ]
 }

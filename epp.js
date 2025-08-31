@@ -1,9 +1,28 @@
 import express from "express";
-import cors from "cors";   // <-- import cors
+import cors from "cors";
 import { execFile } from "child_process";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 app.use(express.json());
+
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log("MongoDB connected"))
+  .catch(err => console.error("MongoDB connection error:", err));
+
+// Domain schema
+const domainSchema = new mongoose.Schema({
+  domain: String,
+  prefix: String,
+  extension: String,
+  contact: String,
+  user: String,
+  createdAt: { type: Date, default: Date.now }
+});
+const Domain = mongoose.model("Domain", domainSchema);
 
 // Enable CORS for frontend localhost:3001
 app.use(cors({
@@ -50,6 +69,20 @@ app.delete("/delete/:domain", async (req,res)=>{
   catch(e){ res.status(500).json({error:e}); }
 });
 
+
+// Manual API to save a domain to the database
+app.post("/save-domain", async (req, res) => {
+  const { domain, prefix, extension, contact, user } = req.body;
+  if (!domain || !prefix || !extension || !contact || !user)
+    return res.status(400).json({ error: "domain, prefix, extension, contact, and user required" });
+
+  try {
+    const saved = await Domain.create({ domain, prefix, extension, contact, user });
+    res.json({ success: true, domain: saved });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to save domain", details: err.message });
+  }
+});
 
 // Bulk create domains endpoint (with extensions)
 app.post("/bulk-create", async (req, res) => {
@@ -109,6 +142,12 @@ app.post("/bulk-create", async (req, res) => {
           "secret",
           "-",
         ]);
+        // Save to DB
+        try {
+          await Domain.create({ domain, prefix, extension: ext, contact, user: req.body.user });
+        } catch (dbErr) {
+          console.error("Error saving domain to DB:", dbErr);
+        }
         results.push({ domain, prefix, extension: ext, status: "created", info: created });
       }
       // else: do not include domains that already exist or errored
@@ -119,6 +158,46 @@ app.post("/bulk-create", async (req, res) => {
   }
 
   res.json({ keyword, type: type || "all", results });
+});
+app.get("/user-domains/:user", async (req, res) => {
+  try {
+    const domains = await Domain.find({ user: req.params.user });
+    res.json({ user: req.params.user, domains });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch domains", details: err.message });
+  }
+});
+app.get("/my-domains", async (req, res) => {
+  // Example: get user email from header (replace with real auth in production)
+  const userEmail = req.headers["x-user-email"];
+  if (!userEmail) return res.status(401).json({ error: "User email required in x-user-email header" });
+  try {
+    const domains = await Domain.find({ user: userEmail });
+    res.json({ user: userEmail, domains });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch domains", details: err.message });
+  }
+});
+const paymentSchema = new mongoose.Schema({
+  domain: String,
+  amount: Number,
+  user: String,
+  paidAt: { type: Date, default: Date.now }
+});
+const Payment = mongoose.model("Payment", paymentSchema);
+
+// Pay API
+app.post("/pay", async (req, res) => {
+  const { domain, amount, user } = req.body;
+  if (!domain || !amount || !user)
+    return res.status(400).json({ error: "domain, amount, and user (email) required" });
+
+  try {
+    const payment = await Payment.create({ domain, amount, user });
+    res.json({ success: true, payment });
+  } catch (err) {
+    res.status(500).json({ error: "Failed to save payment", details: err.message });
+  }
 });
 
 const PORT = process.env.PORT || 5000;
